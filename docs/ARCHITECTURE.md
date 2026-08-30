@@ -31,20 +31,21 @@ guardrails exist.
 │  unattended backfills against production. Autonomy profiles   │
 │  (readonly / supervised / autonomous) tune how much a DE       │
 │  agent can do unattended.                                     │
-├── Self-verification ───────────────────────────────────────┤  PLANNED
-│  Fixture DE repos (a small dbt project, a Python+Airflow      │
-│  DAG repo) exercised by the harness's own test suite, so       │
-│  de-harness eats its own gate the way ai-harness does.         │
+├── Self-verification ───────────────────────────────────────┤  PARTIAL
+│  tests/run-all.sh is the repo's own gate: manifests, skill    │
+│  frontmatter, DE convention invariants, doc links. Fixture    │
+│  DE repos (a dbt project, an Airflow DAG repo) remain to do.  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## Current state
 
-Only the **Conventions** layer exists (`base/CLAUDE.base.md`,
-`docs/GOALS.md`). There is no working detection script, no skills, no agents,
-no hooks, and no fixtures yet — `README.md` reflects this as "early
-scaffolding." Nothing in this repo should be described or installed as if the
-later layers already work.
+The **Conventions** layer exists (`base/CLAUDE.base.md`, `docs/GOALS.md`), and
+the repo is now an installable plugin (`.claude-plugin/marketplace.json`) with
+its own gate (`tests/run-all.sh`). There is still no detection script, no
+skills, no agents, no hooks, and no fixtures — `README.md` reflects this as
+"early scaffolding." Nothing in this repo should be described or installed as
+if the later layers already work.
 
 ## Relationship to ai-harness
 

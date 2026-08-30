@@ -1,0 +1,5 @@
+# Local AI-agent harness config — machine-local, not part of the repo.
+# Note: .claude-plugin/ is NOT ignored — it holds the tracked plugin manifest.
+/CLAUDE.md
+/.claude/
+/.harness/
