@@ -1,0 +1,18 @@
+{
+  "name": "de-harness",
+  "owner": {
+    "name": "Kanstantsin Rumas"
+  },
+  "metadata": {
+    "description": "Home of de-harness — an AI-agent engineering harness for data engineering repositories. Conventions, checks, and guardrails so agent-driven pipeline changes are held to the same bar as any other production change."
+  },
+  "plugins": [
+    {
+      "name": "de-harness",
+      "source": "./",
+      "description": "AI-agent engineering harness for data engineering repositories: idempotency, schema contracts, data quality gates, and safe backfills for dbt and Airflow/Dagster pipelines.",
+      "category": "workflow",
+      "keywords": ["data-engineering", "dbt", "airflow", "dagster", "data-quality", "pipelines", "sql"]
+    }
+  ]
+}
