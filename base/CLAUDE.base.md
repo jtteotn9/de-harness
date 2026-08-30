@@ -1,0 +1,140 @@
+# Engineering conventions (de-harness base)
+
+These are data-engineering-specific working rules, on top of general software
+engineering practice. They are imported into a target project's `CLAUDE.md`
+(`@.harness/CLAUDE.base.md` or copied in) and apply alongside anything the
+project defines itself. Project-specific instructions always win over this
+file.
+
+v1 scope is Python/SQL pipelines built with dbt and orchestrated with
+Airflow/Dagster — see [docs/GOALS.md](../docs/GOALS.md). Apply these rules in
+spirit even on stacks not yet explicitly covered (Spark, streaming, warehouse
+specifics).
+
+## Operating principle
+
+A pipeline change is not "working" because it ran once without an error — it's
+working because it produces correct output under re-runs, partial failures,
+and late/out-of-order data. Design and review for those cases, not just the
+happy path on a clean run.
+
+## Idempotency by default
+
+- A pipeline or transform must be safely re-runnable against the same input
+  without producing duplicate or corrupted output. Prefer `MERGE`/upsert or
+  partition-overwrite over blind `INSERT`/append when the same run could
+  execute twice (retries, backfills, orchestrator replays).
+- State which idempotency strategy a model/DAG task uses (overwrite,
+  merge-on-key, append-only-with-dedup) when it isn't obvious from the code.
+- Append-only writes are only safe when the source is guaranteed
+  exactly-once or downstream consumers already dedup — don't assume it.
+
+## Schema contracts at every boundary
+
+- Treat every external and upstream input as untrusted: source system
+  extracts, event streams, API responses, files landed by another team.
+  Validate or declare the expected schema at the point of ingestion — dbt
+  `sources` + `schema.yml`, Pydantic/dataclasses for Python-side records,
+  Avro/Protobuf schemas for streaming.
+- Schema drift from an upstream source is a boundary-input problem, not a
+  runtime surprise: fail loudly (or quarantine the batch) rather than
+  silently coercing or dropping columns.
+- Don't propagate an inferred/loose schema downstream when a stricter one is
+  available upstream.
+
+## Data quality checks are part of the gate
+
+- A pipeline change isn't done until its output has a data quality check
+  attached — dbt tests (`unique`, `not_null`, relationships, custom), Great
+  Expectations, or Soda checks, whichever the project already uses.
+- New or changed models/tables need at least the equivalent of a null/uniqueness/
+  referential check on their primary key and any join keys, at the same time
+  the change is made — not filed as a follow-up.
+- A green pipeline run with no data quality check on its output is not
+  verified; say so explicitly if the gate doesn't cover it yet.
+
+## No destructive SQL without explicit human confirmation
+
+- `DROP`, `TRUNCATE`, `DELETE` without a `WHERE` clause, and full-table
+  overwrites against a production dataset require explicit human confirmation
+  before running — never execute these against production data on your own
+  initiative, even to "clean up" or "fix" a bad state.
+- Prefer a reversible operation (soft delete, write-to-new-table-then-swap,
+  scoped `DELETE ... WHERE`) over an irreversible one when both accomplish the
+  task.
+
+## Backfills are a first-class, reviewed operation
+
+- Never silently reprocess historical data as a side effect of another
+  change. A backfill is its own explicit action.
+- Before running one, state: the date/partition range being reprocessed, why,
+  and the expected impact (rows affected, downstream tables/dashboards that
+  will change, approximate cost for warehouse-billed engines).
+- Backfills that touch data already consumed by downstream reports or other
+  teams need human sign-off before running, not just before merging the code.
+
+## Observability is not optional
+
+- A pipeline should emit enough signal to diagnose a failure without
+  re-running it blind: row counts in/out, freshness (last successful load
+  time), and lineage (which run produced which output), via whatever the
+  project's orchestrator/dbt artifacts already provide.
+- A "silent success" — a run that completes with zero rows processed when
+  rows were expected — is a failure mode to guard against, not just a crash.
+
+## Cost awareness
+
+- Before running a job against production-scale data (a Spark job, a
+  warehouse-wide `dbt run`, a full-table backfill), state the expected data
+  volume and rough cost order of magnitude if the engine bills by data
+  scanned/compute time. Don't let scale surprises show up in a bill instead of
+  in review.
+
+## PII and sensitive data
+
+- Never log raw PII (names, emails, addresses, identifiers) or full record
+  payloads that may contain it — log keys/counts/hashes instead.
+- Classify columns that carry PII where the project has a mechanism to do so
+  (dbt meta tags, column comments), and prefer masking/tokenization in
+  non-production environments.
+- Treat database connection strings, warehouse credentials, and API keys for
+  data sources/sinks as secrets: never hardcode them, never log them, read
+  them from config/environment/secret manager.
+
+## Verification — "done" means proven
+
+- State the success criterion before non-trivial pipeline work, including
+  what "correct output" looks like for this change.
+- Run the project's gate (lint/format for SQL and Python, `dbt test`/`dbt
+  build`, unit tests for Python transform logic, data quality checks) before
+  calling anything done. A red or missing gate is not done — say precisely
+  what's unverified if it can't run.
+- Add or extend tests for behavior you change: dbt tests for model logic,
+  pytest for Python transforms/DAG logic.
+
+## Git and safety guardrails
+
+- **Never commit secrets** — no `.env`, credential files, private keys,
+  warehouse connection profiles (`profiles.yml` with embedded credentials),
+  service-account JSON, or raw data dumps that may contain PII.
+- **Push and PRs are user-triggered only.** Never run `git push` or open a
+  pull/merge request on your own initiative — only when the user explicitly
+  asks for it in the current session.
+- **PR by default.** Work on a branch and open a pull/merge request for
+  review; push straight to a shared/default branch only when the project's
+  own rules explicitly say to, and only after a green gate.
+- **Never force-push a shared branch, never rewrite published history, never
+  hard-reset away others' work.**
+- Do not run destructive or irreversible commands (mass delete, `db drop`,
+  infra `apply`/`deploy`, `terraform apply`, production backfills) without
+  explicit human approval.
+- Commit in coherent units with clear messages. Stage only files belonging to
+  your change.
+
+## No AI co-author trailers
+
+Do **not** add any AI/assistant co-author trailer to commits — no
+`Co-Authored-By: Claude`, `Codex`, `Copilot`, or similar, and no
+"Generated with" attribution lines. Commits are authored under the human's git
+identity only. Write a clear, human-style commit message describing the
+change.

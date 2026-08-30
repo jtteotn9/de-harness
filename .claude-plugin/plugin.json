@@ -1,0 +1,6 @@
+{
+  "name": "de-harness",
+  "description": "AI-agent engineering harness for data engineering repositories: conventions, checks, and guardrails for pipeline changes (dbt, Airflow/Dagster in v1; Spark and streaming planned).",
+  "version": "0.1.0",
+  "license": "MIT"
+}
