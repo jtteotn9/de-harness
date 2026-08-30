@@ -166,6 +166,14 @@ else
 fi
 
 echo
+echo "### Repo scanner (investigate)"
+if [ -f "$HARNESS/tests/test-scan.sh" ]; then
+  bash "$HARNESS/tests/test-scan.sh" || FAIL=1
+else
+  echo "ok   none yet"
+fi
+
+echo
 echo "### Guardrail hooks (destructive data operations)"
 if [ -f "$HARNESS/tests/test-hooks.sh" ]; then
   bash "$HARNESS/tests/test-hooks.sh" || FAIL=1

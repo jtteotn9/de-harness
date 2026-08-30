@@ -14,12 +14,32 @@ adopted as a team standard across multiple DE repos.
 See [docs/GOALS.md](docs/GOALS.md) for the mission and v1 scope, and
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it's structured.
 
-## Status: early scaffolding
+## Status: early, but usable
 
-Only the conventions layer exists today (`base/CLAUDE.base.md`). Detection,
-skills, agents, guardrail hooks, and self-verifying fixtures are planned but
-not yet built — see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for what's
-built versus planned.
+Three layers work today: the conventions (`base/CLAUDE.base.md`), a guardrail
+hook that refuses destructive production operations, and the first command,
+`/de-harness:investigate`. Detection (`detect-de-stack.sh`), the remaining
+skills, and agents are still to come — see
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for what's built versus planned.
+
+## Commands
+
+### `/de-harness:investigate`
+
+Answers one question for someone arriving at an unfamiliar pipeline repo:
+*"I know nothing about this project — what do I need in order to do my first
+task safely?"*
+
+It reads dbt's `target/manifest.json` when present (authoritative lineage,
+tests and sources) and writes `docs/REPO-MODEL.md`: what the project does,
+where things live, how to run it, its shape, **which models have the largest
+blast radius**, and which are untested. Orientation for a first change, not an
+exhaustive audit.
+
+Two things it will not do: read `profiles.yml` or any credentials file, and
+import or execute DAG code — Airflow DAGs are parsed with `ast`, never run.
+Without a manifest it falls back to a shallow file scan and says so rather than
+presenting estimates as lineage.
 
 ## Installing
 

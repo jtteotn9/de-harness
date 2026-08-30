@@ -4,3 +4,7 @@
 /CLAUDE.md
 /.claude/
 /.harness/
+
+# Byte-code left behind by the gate's py_compile step.
+__pycache__/
+*.pyc
