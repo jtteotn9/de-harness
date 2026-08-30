@@ -50,6 +50,28 @@ Re-run it to pick up updated conventions. It is non-destructive: an `AGENTS.md`
 you already have is preserved, and only the de-harness block between markers is
 rewritten.
 
+## Guardrails (Claude Code)
+
+Installing the plugin activates `hooks/guard-data-ops.sh`, which refuses
+destructive operations against production data before they run:
+
+| Refused | |
+|---|---|
+| `DROP` / `TRUNCATE` / `DELETE` with no `WHERE` | only when a database client is actually invoked |
+| `bq rm` | deletes a table or dataset outright |
+| `airflow dags backfill`, `airflow tasks clear` | reprocessing is a reviewed operation |
+| `dbt run/build --full-refresh` | unless the target is explicitly non-production |
+
+It is deliberately narrow. Searching or reading SQL is not executing it, so
+`grep -r "DROP TABLE" migrations/` and `cat drop_legacy.sql` run normally — a
+guard that blocks ordinary work gets switched off, and `tests/test-hooks.sh`
+treats a false positive as a failure.
+
+When a block is wrong, a human can add an `allow-command <glob>` line to
+`.de-harness/guard-overrides.conf` in the target repo. The guard refuses shell
+edits to that file, so every override reflects a human decision. Reading it is
+always allowed.
+
 ### What does not port
 
 The conventions layer ports at full fidelity. The planned **guardrail hooks**

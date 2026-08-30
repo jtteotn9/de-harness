@@ -24,13 +24,13 @@ guardrails exist.
 │  its DE-aware gate, planning/shipping pipeline changes,       │
 │  writing dbt/pytest/Great-Expectations tests, reviewing a     │
 │  pipeline PR for the conventions above.                       │
-├── Guardrails & autonomy ───────────────────────────────────┤  PLANNED
-│  Hooks enforcing the non-negotiables from CLAUDE.base.md:     │
-│  block destructive SQL without confirmation, block committing │
-│  connection strings / warehouse credentials, block            │
-│  unattended backfills against production. Autonomy profiles   │
-│  (readonly / supervised / autonomous) tune how much a DE       │
-│  agent can do unattended.                                     │
+├── Guardrails & autonomy ───────────────────────────────────┤  PARTIAL
+│  hooks/guard-data-ops.sh refuses destructive production       │
+│  operations: DROP/TRUNCATE/unscoped DELETE through a DB       │
+│  client, bq rm, unattended backfills, and --full-refresh      │
+│  outside a non-prod target. Human-authored overrides. Still   │
+│  to do: forcing DQ checks at Stop, secret-in-profiles guard,  │
+│  autonomy profiles.                                           │
 ├── Self-verification ───────────────────────────────────────┤  PARTIAL
 │  tests/run-all.sh is the repo's own gate: manifests, skill    │
 │  frontmatter, DE convention invariants, doc links. Fixture    │
@@ -42,10 +42,11 @@ guardrails exist.
 
 The **Conventions** layer exists (`base/CLAUDE.base.md`, `docs/GOALS.md`), and
 the repo is now an installable plugin (`.claude-plugin/marketplace.json`) with
-its own gate (`tests/run-all.sh`). There is still no detection script, no
-skills, no agents, no hooks, and no fixtures — `README.md` reflects this as
-"early scaffolding." Nothing in this repo should be described or installed as
-if the later layers already work.
+its own gate (`tests/run-all.sh`). The first guardrail hook is in place
+(`hooks/guard-data-ops.sh`, refusing destructive production operations). There
+is still no detection script, no skills, no agents, and no fixtures —
+`README.md` reflects this as "early scaffolding." Nothing in this repo should be
+described or installed as if the later layers already work.
 
 ## Distribution across agent tools
 
@@ -72,10 +73,11 @@ Agent mode.
 safe to re-run — that is how a repo picks up updated conventions.
 
 **Portability limit.** Conventions port at full fidelity; skills will port
-partially (Cursor commands, Codex prompts) once they exist. The planned
-guardrail hooks depend on Claude Code's hook API and have no Codex/Cursor
-equivalent — enforcement stays Claude Code only, and the docs must keep saying
-so rather than implying parity.
+partially (Cursor commands, Codex prompts) once they exist. The guardrail hooks
+depend on Claude Code's hook API and have no Codex/Cursor equivalent — a Cursor
+user reads "never DROP against production" as a rule, where a Claude Code user
+has it refused before it runs. Enforcement stays Claude Code only, and the docs
+must keep saying so rather than implying parity.
 
 ## Relationship to ai-harness
 
