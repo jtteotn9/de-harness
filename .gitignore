@@ -1,5 +1,6 @@
 # Local AI-agent harness config — machine-local, not part of the repo.
-# Note: .claude-plugin/ is NOT ignored — it holds the tracked plugin manifest.
+# Patterns are anchored with a leading "/" so they match only at the repo root:
+# shipped product keeps its dot-paths (.claude-plugin/, dist/.cursor/rules/).
 /CLAUDE.md
 /.claude/
 /.harness/

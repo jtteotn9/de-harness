@@ -47,6 +47,36 @@ skills, no agents, no hooks, and no fixtures — `README.md` reflects this as
 "early scaffolding." Nothing in this repo should be described or installed as
 if the later layers already work.
 
+## Distribution across agent tools
+
+`base/CLAUDE.base.md` is the single source of truth. Everything under `dist/` is
+generated from it by `scripts/build-agent-rules.sh`, and the gate regenerates
+and diffs so the copies cannot drift:
+
+```
+base/CLAUDE.base.md ──┬──▶ .claude-plugin/          Claude Code plugin
+   (source of truth)  ├──▶ dist/AGENTS.md           Codex, Cursor, +20 tools
+                      └──▶ dist/.cursor/rules/*.mdc Cursor, scoped by globs
+```
+
+`AGENTS.md` is a neutral format stewarded by the Agentic AI Foundation, so one
+file reaches Codex, Cursor, Copilot, Gemini CLI, Zed and others. Cursor
+additionally gets `.mdc` rules, which support `globs` — that lets the SQL
+conventions attach to `*.sql`/`schema.yml` and the orchestration conventions to
+`dags/`, rather than loading everything on every file. Each convention section
+appears in exactly one `.mdc` (asserted by `tests/test-agent-rules.sh`). Legacy
+`.cursorrules` is deliberately not emitted: it is silently ignored in Cursor
+Agent mode.
+
+`scripts/install-into-repo.sh` installs the bundle into a target DE repo and is
+safe to re-run — that is how a repo picks up updated conventions.
+
+**Portability limit.** Conventions port at full fidelity; skills will port
+partially (Cursor commands, Codex prompts) once they exist. The planned
+guardrail hooks depend on Claude Code's hook API and have no Codex/Cursor
+equivalent — enforcement stays Claude Code only, and the docs must keep saying
+so rather than implying parity.
+
 ## Relationship to ai-harness
 
 de-harness is **standalone** — it does not require ai-harness to be installed
