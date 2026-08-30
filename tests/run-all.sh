@@ -165,5 +165,13 @@ else
 fi
 
 echo
+echo "### Cross-tool bundle (AGENTS.md + Cursor rules)"
+if [ -f "$HARNESS/tests/test-agent-rules.sh" ]; then
+  bash "$HARNESS/tests/test-agent-rules.sh" || FAIL=1
+else
+  echo "ok   none yet"
+fi
+
+echo
 if [ "$FAIL" -eq 0 ]; then echo "ALL SUITES GREEN"; else echo "SUITES FAILED"; fi
 exit "$FAIL"
