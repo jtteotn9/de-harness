@@ -1,0 +1,161 @@
+{
+ "child_map": {
+  "exposure.acme.revenue_dashboard": [],
+  "model.acme.dim_customer": [],
+  "model.acme.fct_revenue": [
+   "exposure.acme.revenue_dashboard"
+  ],
+  "model.acme.stg_charges": [
+   "model.acme.dim_customer",
+   "model.acme.fct_revenue",
+   "test.acme.not_null_stg_charges_id",
+   "test.acme.unique_stg_charges_id"
+  ],
+  "model.acme.stg_events": [
+   "model.acme.fct_revenue"
+  ],
+  "seed.acme.country_codes": [],
+  "source.acme.raw.charges": [
+   "model.acme.stg_charges"
+  ],
+  "source.acme.raw.events": [
+   "model.acme.stg_events"
+  ],
+  "test.acme.not_null_stg_charges_id": [],
+  "test.acme.unique_stg_charges_id": []
+ },
+ "exposures": {
+  "exposure.acme.revenue_dashboard": {
+   "depends_on": {
+    "nodes": [
+     "model.acme.fct_revenue"
+    ]
+   },
+   "name": "revenue_dashboard",
+   "type": "dashboard"
+  }
+ },
+ "metadata": {
+  "adapter_type": "bigquery",
+  "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
+  "generated_at": "2026-08-28T09:15:00.000000Z",
+  "project_name": "acme_warehouse"
+ },
+ "nodes": {
+  "model.acme.dim_customer": {
+   "config": {
+    "materialized": "table"
+   },
+   "depends_on": {
+    "nodes": []
+   },
+   "description": "",
+   "name": "dim_customer",
+   "path": "marts/dim_customer.sql",
+   "resource_type": "model"
+  },
+  "model.acme.fct_revenue": {
+   "config": {
+    "materialized": "incremental"
+   },
+   "depends_on": {
+    "nodes": []
+   },
+   "description": "Daily revenue fact.",
+   "name": "fct_revenue",
+   "path": "marts/fct_revenue.sql",
+   "resource_type": "model"
+  },
+  "model.acme.stg_charges": {
+   "config": {
+    "materialized": "view"
+   },
+   "depends_on": {
+    "nodes": []
+   },
+   "description": "Cleaned Stripe charges.",
+   "name": "stg_charges",
+   "path": "staging/stg_charges.sql",
+   "resource_type": "model"
+  },
+  "model.acme.stg_events": {
+   "config": {
+    "materialized": "view"
+   },
+   "depends_on": {
+    "nodes": []
+   },
+   "description": "",
+   "name": "stg_events",
+   "path": "staging/stg_events.sql",
+   "resource_type": "model"
+  },
+  "seed.acme.country_codes": {
+   "depends_on": {
+    "nodes": []
+   },
+   "name": "country_codes",
+   "resource_type": "seed"
+  },
+  "test.acme.not_null_stg_charges_id": {
+   "depends_on": {
+    "nodes": [
+     "model.acme.stg_charges"
+    ]
+   },
+   "name": "not_null_stg_charges_id",
+   "resource_type": "test"
+  },
+  "test.acme.unique_stg_charges_id": {
+   "depends_on": {
+    "nodes": [
+     "model.acme.stg_charges"
+    ]
+   },
+   "name": "unique_stg_charges_id",
+   "resource_type": "test"
+  }
+ },
+ "parent_map": {
+  "exposure.acme.revenue_dashboard": [
+   "model.acme.fct_revenue"
+  ],
+  "model.acme.dim_customer": [
+   "model.acme.stg_charges"
+  ],
+  "model.acme.fct_revenue": [
+   "model.acme.stg_charges",
+   "model.acme.stg_events"
+  ],
+  "model.acme.stg_charges": [
+   "source.acme.raw.charges"
+  ],
+  "model.acme.stg_events": [
+   "source.acme.raw.events"
+  ],
+  "seed.acme.country_codes": [],
+  "test.acme.not_null_stg_charges_id": [
+   "model.acme.stg_charges"
+  ],
+  "test.acme.unique_stg_charges_id": [
+   "model.acme.stg_charges"
+  ]
+ },
+ "sources": {
+  "source.acme.raw.charges": {
+   "freshness": null,
+   "name": "charges",
+   "source_name": "raw"
+  },
+  "source.acme.raw.events": {
+   "freshness": {
+    "warn_after": {
+     "count": 6,
+     "period": "hour"
+    }
+   },
+   "name": "events",
+   "source_name": "raw"
+  }
+ }
+}

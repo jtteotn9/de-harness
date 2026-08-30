@@ -13,8 +13,9 @@ An AI-agent engineering harness for data engineering repositories. It is adopted
 as a team standard across many DE repos, so everything here must read as generic
 and stack-level — never tied to one pipeline, warehouse, or company.
 
-Status: early scaffolding. Only the conventions layer exists. Detection, skills,
-agents, and guardrail hooks are planned but not built. See
+Working today: the conventions, one guardrail hook (`hooks/guard-data-ops.sh`),
+and one command (`skills/investigate`). Detection (`detect-de-stack.sh`), the
+remaining skills, and agents are not built. See
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for built vs. planned, and never
 describe the repo as if the later layers already work.
 

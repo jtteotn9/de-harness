@@ -18,12 +18,12 @@ guardrails exist.
 │  pyspark/spark-submit usage, Kafka/Flink config) to gate      │
 │  commands: `dbt build`, `dbt test`, pytest, Great             │
 │  Expectations checkpoints, sqlfluff lint, etc.                │
-├── Execution ───────────────────────────────────────────────┤  PLANNED
-│  Skills (procedures) and agents (delegated specialists) for  │
-│  DE workflows: adapting the harness into a DE repo, running   │
-│  its DE-aware gate, planning/shipping pipeline changes,       │
-│  writing dbt/pytest/Great-Expectations tests, reviewing a     │
-│  pipeline PR for the conventions above.                       │
+├── Execution ───────────────────────────────────────────────┤  PARTIAL
+│  skills/investigate + scripts/scan-de-repo.py: first-task     │
+│  orientation for an unfamiliar pipeline repo, from dbt's      │
+│  manifest.json and ast-parsed DAGs. Still to do: DE-aware     │
+│  gate, planning/shipping pipeline changes, writing dbt/GE     │
+│  tests, reviewing a pipeline PR.                              │
 ├── Guardrails & autonomy ───────────────────────────────────┤  PARTIAL
 │  hooks/guard-data-ops.sh refuses destructive production       │
 │  operations: DROP/TRUNCATE/unscoped DELETE through a DB       │
@@ -33,20 +33,24 @@ guardrails exist.
 │  autonomy profiles.                                           │
 ├── Self-verification ───────────────────────────────────────┤  PARTIAL
 │  tests/run-all.sh is the repo's own gate: manifests, skill    │
-│  frontmatter, DE convention invariants, doc links. Fixture    │
-│  DE repos (a dbt project, an Airflow DAG repo) remain to do.  │
+│  frontmatter, DE conventions, doc links, hooks, scanner, and  │
+│  the generated dist/ bundle, against fixture dbt/Airflow repos.│
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## Current state
 
-The **Conventions** layer exists (`base/CLAUDE.base.md`, `docs/GOALS.md`), and
-the repo is now an installable plugin (`.claude-plugin/marketplace.json`) with
-its own gate (`tests/run-all.sh`). The first guardrail hook is in place
-(`hooks/guard-data-ops.sh`, refusing destructive production operations). There
-is still no detection script, no skills, no agents, and no fixtures —
-`README.md` reflects this as "early scaffolding." Nothing in this repo should be
-described or installed as if the later layers already work.
+Working today: the **Conventions** layer (`base/CLAUDE.base.md`,
+`docs/GOALS.md`); an installable plugin (`.claude-plugin/marketplace.json`) with
+its own gate (`tests/run-all.sh`); one guardrail hook (`hooks/guard-data-ops.sh`,
+refusing destructive production operations); and one command
+(`skills/investigate` + `scripts/scan-de-repo.py`), exercised against fixture
+repos under `fixtures/`.
+
+Still absent: the **Detection** layer (`detect-de-stack.sh`), the remaining
+skills, agents, autonomy profiles, and the Stop hook that would force data
+quality checks. Nothing in this repo should be described or installed as if
+those already work.
 
 ## Distribution across agent tools
 
