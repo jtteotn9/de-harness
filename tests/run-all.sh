@@ -13,7 +13,8 @@ shopt -s nullglob
 
 echo "### JSON manifests valid"
 if [ "$HAVE_PY" = 1 ]; then
-  for f in "$HARNESS"/.claude-plugin/*.json; do
+  for f in "$HARNESS"/.claude-plugin/*.json "$HARNESS"/hooks/hooks.json; do
+    [ -f "$f" ] || continue
     if python3 -c "import json,sys;json.load(open(sys.argv[1]))" "$f" 2>/dev/null; then
       echo "ok   ${f#"$HARNESS"/}"
     else
@@ -162,6 +163,14 @@ elif [ "$HAVE_PY" = 1 ]; then
   done
 else
   echo "SKIP python3 not available"
+fi
+
+echo
+echo "### Guardrail hooks (destructive data operations)"
+if [ -f "$HARNESS/tests/test-hooks.sh" ]; then
+  bash "$HARNESS/tests/test-hooks.sh" || FAIL=1
+else
+  echo "ok   none yet"
 fi
 
 echo
